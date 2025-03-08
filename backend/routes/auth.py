@@ -32,19 +32,19 @@ def login():
     user = User.query.filter_by(email=data['email']).first()
     if not user or not check_password_hash(user.password, data['password']):
         return jsonify(msg="Invalid credentials"), 401
-    access_token = create_access_token(identity=user.id, additional_claims={'role': user.role})
+    access_token = create_access_token(identity=str(user.id), additional_claims={'role': user.role})
     return jsonify(access_token=access_token, role=user.role), 200
 
-@auth_bp.route('/profile', methods=['GET'])
-@jwt_required()
-def get_profile():
-    user_id = get_jwt_identity()
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify(msg="User not found"), 404
-    return jsonify({
-        'first_name': user.first_name,
-        'last_name': user.last_name,
-        'email': user.email,
-        'role': user.role
-    }), 200
+# @auth_bp.route('/profile', methods=['GET'])
+# @jwt_required()
+# def get_profile():
+#     user_id = get_jwt_identity()
+#     user = User.query.get(user_id)
+#     if not user:
+#         return jsonify(msg="User not found"), 404
+#     return jsonify({
+#         'first_name': user.first_name,
+#         'last_name': user.last_name,
+#         'email': user.email,
+#         'role': user.role
+#     }), 200

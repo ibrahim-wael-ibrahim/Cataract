@@ -2,13 +2,12 @@ FROM node:23.8.0
 
 WORKDIR /app
 
-COPY package.json .
+# Copy package files first to leverage Docker cache
+COPY package.json package-lock.json ./
+
 RUN npm install
 
 COPY . .
-
-# Set the env variable for polling
-ENV CHOKIDAR_USEPOLLING=true
 
 EXPOSE 3000
 

@@ -1,0 +1,474 @@
++---------------------+
+|     System          |
+| (Cataract Detection)|
++---------------------+
+          ^           ^
+          |           |
+          |           |
++---------+---------+ +---------+---------+
+|         User       | |        Admin      |
+| (Primary Actor)    | | (Secondary Actor) |
++---------------------+ +---------------------+
+          |                      |
+          |                      |
+          v                      v
++-----------------+      +-----------------+
+| Login           |<---->| Login           |
++-----------------+      +-----------------+
+          |                      |
+          |                      |
+          v                      v
++-----------------+      +-----------------+
+| Signup          |      | Add Doctor      |
++-----------------+      +-----------------+
+          |                      |
+          |                      v
+          v               +-----------------+
++-----------------+       | Edit Doctor     |
+| Show History    |       +-----------------+
++-----------------+       |
+          |               v
+          v           +-----------------+
++-----------------+   | Delete Doctor   |
+| Search Doctor   |   +-----------------+
++-----------------+       |
+          |               v
+          v           +-----------------+
++-----------------+   | Get Data        |
+| Upload Image    |   +-----------------+
+| (for AI)        |
++-----------------+
+          |
+          v
++-----------------+
+| Open Doctor     |
+| Profile         |
++-----------------+
+_________________________________________
+D:\FINAL\FINEL PROJECT\BACKEND
+│   .env
+│   app.py
+│   config.py
+│   models.py
+│   requirements.txt
+│
+├───routes
+│       ai.py
+│       auth.py
+│       doctors.py
+│       model.h5
+│
+└───upload
+_________________________________________
+( app.py )
+# app.py
+from flask import Flask, send_from_directory
+from flask_migrate import Migrate
+from flask_jwt_extended import JWTManager
+from models import db, User
+from routes.auth import auth_bp
+from routes.ai import ai_bp
+from routes.doctors import doctors_bp
+from flask_cors import CORS
+import os
+from werkzeug.security import generate_password_hash
+from sqlalchemy import inspect
+
+app = Flask(__name__)
+CORS(app)
+app.config.from_object('config.Config')
+
+# Initialize extensions
+db.init_app(app)
+migrate = Migrate(app, db)
+jwt = JWTManager(app)
+
+# Register blueprints
+app.register_blueprint(auth_bp, url_prefix='/api/auth')
+app.register_blueprint(ai_bp, url_prefix='/api/ai')
+app.register_blueprint(doctors_bp, url_prefix='/api/doctors')
+
+# Set up uploads folder
+UPLOAD_FOLDER = os.path.join(app.root_path, 'upload')
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+# Initialize admin user on app startup
+def init_admin():
+    with app.app_context():
+        admin_email = 'admin@eye.com'
+        if not User.query.filter_by(email=admin_email).first():
+            admin = User(
+                first_name='Admin',
+                last_name='User',
+                email=admin_email,
+                password=generate_password_hash('admin'),
+                role='admin'
+            )
+            db.session.add(admin)
+            db.session.commit()
+            print("Admin user created.")
+
+def init_admin_safe():
+    with app.app_context():
+        inspector = inspect(db.engine)
+        if inspector.has_table("user"):
+            init_admin()
+        else:
+            print("User table not found; skipping admin initialization.")
+
+
+# Run init_admin when the app starts
+init_admin_safe()
+
+if __name__ == '__main__':
+    app.run(debug=True)
+_________________________________________
+( config.py )
+# /backend/routes/config.py
+
+import os
+from dotenv import load_dotenv
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+load_dotenv(os.path.join(basedir, '.env'))
+
+class Config:
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
+    MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # 10MB image limit
+
+_________________________________________
+( models.py )
+# models.py
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
+
+class User(db.Model):
+    __tablename__ = 'user'
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.String(20), nullable=False, default='patient')
+    profile = db.relationship('Profile', backref='user', uselist=False)
+    patient_details = db.relationship('PatientDetails', backref='user', lazy='dynamic')
+
+class Profile(db.Model):
+    __tablename__ = 'profile'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    about = db.Column(db.Text)
+    qualification = db.Column(db.String(255))
+    url_picture_profile = db.Column(db.String(255))
+    url_whatsapp = db.Column(db.String(255))
+    url_facebook = db.Column(db.String(255))
+    url_instagram = db.Column(db.String(255))
+    url_website = db.Column(db.String(255))
+    state = db.Column(db.String(50))
+
+class PatientDetails(db.Model):
+    __tablename__ = 'patient_details'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    image_url = db.Column(db.String(255), nullable=False)
+    percentage = db.Column(db.Float, nullable=False)
+    status = db.Column(db.String(50), nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+_________________________________________
+( requirements.txt )
+Flask
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-JWT-Extended
+Flask-Cors
+python-dotenv
+PyMySQL
+tensorflow
+Pillow
+numpy
+Werkzeug
+opencv-python
+Flask-Limiter
+gunicorn
+cryptography
+
+_________________________________________
+( .env )
+DATABASE_URL=mysql+pymysql://abader:abader@localhost:3306/eyedb
+JWT_SECRET_KEY=123
+_________________________________________
+( ai.py )
+from flask import Blueprint, jsonify, request, current_app, url_for
+from PIL import Image
+import numpy as np
+import tensorflow as tf
+from models import db, PatientDetails, User
+from flask_jwt_extended import jwt_required, get_jwt_identity  # Add these imports
+from werkzeug.utils import secure_filename
+import os
+import time
+
+ai_bp = Blueprint('ai', __name__)
+
+# Load model only once at startup
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+model_path = os.path.join(BASE_DIR, 'model.h5')
+model = tf.keras.models.load_model(model_path)
+
+@ai_bp.route('/predict', methods=['POST'])
+@jwt_required()  # This should now work
+def predict_image():
+    if 'image' not in request.files:
+        return jsonify(error="No image provided"), 400
+    
+    image_file = request.files['image']
+    
+    # Generate a new filename using a timestamp
+    original_filename = secure_filename(image_file.filename)
+    ext = os.path.splitext(original_filename)[1]
+    new_filename = f"image_{int(time.time())}{ext}"
+    
+    # Save the uploaded file
+    upload_folder = current_app.config.get('UPLOAD_FOLDER')
+    file_path = os.path.join(upload_folder, new_filename)
+    image_file.save(file_path)
+    
+    file_url = url_for('uploaded_file', filename=new_filename, _external=True)
+    
+    # Process the image for prediction
+    image = Image.open(file_path)
+    processed = np.array(image.resize((224, 224))) / 255.0
+    processed = np.expand_dims(processed, axis=0)
+    
+    prediction = model.predict(processed)[0][0]
+    status = "Normal" if prediction >= 0.5 else "Cataract"
+    
+    user_id = get_jwt_identity()
+    
+    new_detail = PatientDetails(
+        user_id=user_id,
+        image_url=file_url,
+        percentage=round(prediction * 100, 2),
+        status=status
+    )
+    db.session.add(new_detail)
+    db.session.commit()
+    
+    return jsonify({
+        'status': status,
+        'percentage': round(prediction * 100, 2),
+        'image_url': file_url
+    })
+
+@ai_bp.route('/history', methods=['GET'])
+@jwt_required()  # This should now work
+def get_history():
+    user_id = get_jwt_identity()
+    details = PatientDetails.query.filter_by(user_id=user_id).all()
+    return jsonify([{
+        'id': detail.id,
+        'status': detail.status,
+        'percentage': detail.percentage,
+        'image_url': detail.image_url,
+        'created_at': detail.created_at.isoformat() if hasattr(detail, 'created_at') else None
+    } for detail in details]), 200
+_________________________________________
+( auth.py )
+# auth.py
+from flask import Blueprint, jsonify, request
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from werkzeug.security import generate_password_hash, check_password_hash
+from models import db, User
+
+auth_bp = Blueprint('auth', __name__)
+
+@auth_bp.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    if User.query.filter_by(email=data['email']).first():
+        return jsonify(msg="Email already exists"), 409
+    try:
+        new_user = User(
+            first_name=data['first_name'],
+            last_name=data['last_name'],
+            email=data['email'],
+            password=generate_password_hash(data['password']),
+            role='patient'
+        )
+        db.session.add(new_user)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify(msg="Registration error"), 500
+    return jsonify(msg="User created"), 201
+
+@auth_bp.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    user = User.query.filter_by(email=data['email']).first()
+    if not user or not check_password_hash(user.password, data['password']):
+        return jsonify(msg="Invalid credentials"), 401
+    access_token = create_access_token(identity=user.id, additional_claims={'role': user.role})
+    return jsonify(access_token=access_token, role=user.role), 200
+
+@auth_bp.route('/profile', methods=['GET'])
+@jwt_required()
+def get_profile():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify(msg="User not found"), 404
+    return jsonify({
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'email': user.email,
+        'role': user.role
+    }), 200
+_________________________________________
+( doctors.py )
+# doctors.py
+from flask import Blueprint, jsonify, request
+from models import db, User, Profile
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
+from werkzeug.security import generate_password_hash
+
+doctors_bp = Blueprint('doctors', __name__)
+
+def check_admin():
+    claims = get_jwt()
+    print(f"JWT Claims: {claims}")
+    if claims.get('role') != 'admin':
+        return jsonify(msg="Admin access required"), 403
+    return None
+
+@doctors_bp.route('/search', methods=['GET'])
+def search_doctors():
+    state = request.args.get('state', '')
+    doctors = User.query\
+        .join(Profile)\
+        .filter(User.role == 'doctor')\
+        .filter(Profile.state.ilike(f'%{state}%'))\
+        .all()
+    
+    return jsonify([
+        {
+            'id': d.id,
+            'name': f"{d.first_name} {d.last_name}",
+            'email': d.email,  # Add email
+            'qualification': d.profile.qualification if d.profile else "",
+            'state': d.profile.state if d.profile else "",  # Add state
+            'contact': d.profile.url_whatsapp if d.profile else ""
+        } for d in doctors
+    ])
+
+# Keep other routes (add, edit, delete) as they are
+@doctors_bp.route('/add', methods=['POST'])
+@jwt_required()
+def add_doctor():
+    admin_check = check_admin()
+    if admin_check:
+        return admin_check
+    
+    data = request.get_json()
+    print(f"Received data: {data}")
+    
+    if User.query.filter_by(email=data['email']).first():
+        return jsonify(msg="Email already exists"), 409
+    
+    try:
+        new_doctor = User(
+            first_name=data['first_name'],
+            last_name=data['last_name'],
+            email=data['email'],
+            password=generate_password_hash(data['password']),
+            role='doctor'
+        )
+        db.session.add(new_doctor)
+        db.session.commit()
+        print(f"Added doctor with ID: {new_doctor.id}")
+
+        profile = Profile(
+            user_id=new_doctor.id,
+            about=data.get('about', ''),
+            qualification=data.get('qualification', ''),
+            url_picture_profile=data.get('url_picture_profile', ''),
+            url_whatsapp=data.get('url_whatsapp', ''),
+            url_facebook=data.get('url_facebook', ''),
+            url_instagram=data.get('url_instagram', ''),
+            url_website=data.get('url_website', ''),
+            state=data.get('state', '')
+        )
+        db.session.add(profile)
+        db.session.commit()
+        print("Profile added")
+        return jsonify(msg="Doctor added"), 201
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error adding doctor: {e}")
+        return jsonify(msg=f"Error adding doctor: {str(e)}"), 500
+
+@doctors_bp.route('/edit/<int:doctor_id>', methods=['PUT'])
+@jwt_required()
+def edit_doctor(doctor_id):
+    admin_check = check_admin()
+    if admin_check:
+        return admin_check
+    
+    doctor = User.query.filter_by(id=doctor_id, role='doctor').first()
+    if not doctor:
+        return jsonify(msg="Doctor not found"), 404
+    
+    data = request.get_json()
+    try:
+        doctor.first_name = data.get('first_name', doctor.first_name)
+        doctor.last_name = data.get('last_name', doctor.last_name)
+        if 'password' in data:
+            doctor.password = generate_password_hash(data['password'])
+        
+        profile = doctor.profile
+        if not profile:
+            profile = Profile(user_id=doctor.id)
+            db.session.add(profile)
+        
+        profile.about = data.get('about', profile.about)
+        profile.qualification = data.get('qualification', profile.qualification)
+        profile.url_picture_profile = data.get('url_picture_profile', profile.url_picture_profile)
+        profile.url_whatsapp = data.get('url_whatsapp', profile.url_whatsapp)
+        profile.url_facebook = data.get('url_facebook', profile.url_facebook)
+        profile.url_instagram = data.get('url_instagram', profile.url_instagram)
+        profile.url_website = data.get('url_website', profile.url_website)
+        profile.state = data.get('state', profile.state)
+        
+        db.session.commit()
+        return jsonify(msg="Doctor updated"), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify(msg="Error updating doctor"), 500
+
+@doctors_bp.route('/delete/<int:doctor_id>', methods=['DELETE'])
+@jwt_required()
+def delete_doctor(doctor_id):
+    admin_check = check_admin()
+    if admin_check:
+        return admin_check
+    
+    doctor = User.query.filter_by(id=doctor_id, role='doctor').first()
+    if not doctor:
+        return jsonify(msg="Doctor not found"), 404
+    
+    try:
+        db.session.delete(doctor)
+        db.session.commit()
+        return jsonify(msg="Doctor deleted"), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify(msg="Error deleting doctor"), 500

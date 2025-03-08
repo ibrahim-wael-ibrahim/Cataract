@@ -1,0 +1,1018 @@
++---------------------+
+|     System          |
+| (Cataract Detection)|
++---------------------+
+          ^           ^
+          |           |
+          |           |
++---------+---------+ +---------+---------+
+|         User       | |        Admin      |
+| (Primary Actor)    | | (Secondary Actor) |
++---------------------+ +---------------------+
+          |                      |
+          |                      |
+          v                      v
++-----------------+      +-----------------+
+| Login           |<---->| Login           |
++-----------------+      +-----------------+
+          |                      |
+          |                      |
+          v                      v
++-----------------+      +-----------------+
+| Signup          |      | Add Doctor      |
++-----------------+      +-----------------+
+          |                      |
+          |                      v
+          v               +-----------------+
++-----------------+       | Edit Doctor     |
+| Show History    |       +-----------------+
++-----------------+       |
+          |               v
+          v           +-----------------+
++-----------------+   | Delete Doctor   |
+| Search Doctor   |   +-----------------+
++-----------------+       |
+          |               v
+          v           +-----------------+
++-----------------+   | Get Data        |
+| Upload Image    |   +-----------------+
+| (for AI)        |
++-----------------+
+          |
+          v
++-----------------+
+| Open Doctor     |
+| Profile         |
++-----------------+
+_________________________________________
+D:\FINAL\FINEL PROJECT\FRONTEND
+│   .gitignore
+│   eslint.config.js
+│   index.html
+│   package-lock.json
+│   package.json
+│   README.md
+│   vite.config.js
+│
+├───public
+│       vite.svg
+│
+└───src
+      │   App.jsx
+      │   index.css
+      │   main.jsx
+      │   routes.jsx
+      │
+      ├───components
+      │       Admin.jsx
+      │       Footer.jsx
+      │       History.jsx
+      │       Home.jsx
+      │       Login.jsx
+      │       Navbar.jsx
+      │       Profile.jsx
+      │       Search.jsx
+      │       Signup.jsx
+      │       UploadForm.jsx
+      │
+      └───context
+              AuthContext.jsx
+_________________________________________
+( main.jsx )
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './index.css';
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>
+);
+_________________________________________
+( App.jsx )
+import React from 'react';
+import { AuthProvider } from './context/AuthContext';
+import RoutesConfig from './routes';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+
+function App() {
+  return (
+    <AuthProvider>
+      <div className="d-flex flex-column min-vh-100">
+        <Navbar />
+        <main className="flex-grow-1">
+          <RoutesConfig />
+        </main>
+        <Footer />
+      </div>
+    </AuthProvider>
+  );
+}
+
+export default App;
+_________________________________________
+( routes.jsx )
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Home from './components/Home';
+import Login from './components/Login';
+import Signup from './components/Signup';
+import Profile from './components/Profile';
+import Search from './components/Search';
+import UploadForm from './components/UploadForm';
+import History from './components/History';
+import Admin from './components/Admin';
+import DoctorProfile from './components/DoctorProfile';
+
+function RoutesConfig() {
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/search" element={<Search />} />
+      <Route path="/upload" element={<UploadForm />} />
+      <Route path="/history" element={<History />} />
+      <Route path="/admin" element={<Admin />} />
+      <Route path="/doctor/:id" element={<DoctorProfile />} />
+    </Routes>
+  );
+}
+
+export default RoutesConfig;
+_________________________________________
+( index.css )
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #F9FAFB;
+}
+
+/* src/index.css */
+body {
+  background-color: #f0f4f8;
+  font-family: 'Arial', sans-serif;
+}
+
+.navbar {
+  background-color: #007bff !important;
+}
+
+.btn-primary {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+.btn-primary:hover {
+  background-color: #003d82;
+  border-color: #003d82;
+}
+
+.card {
+  border: 1px solid #cce5ff;
+}
+
+.alert-info {
+  background-color: #e6f0fa;
+  border-color: #cce5ff;
+}
+_________________________________________
+( Home.jsx )
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Container, Card, Button, Row, Col } from 'react-bootstrap';
+import { Eye, Search, Upload } from 'lucide-react';
+
+function Home() {
+  return (
+    <Container className="my-5">
+      {/* Hero Section */}
+      <Card className="text-center mb-5 shadow-sm">
+        <Card.Body>
+          <Card.Title as="h1" className="display-4 text-primary mb-4">Welcome to EyeCare</Card.Title>
+          <Card.Text className="lead text-muted mb-4">
+            Harnessing AI to detect cataracts early and connect you with top doctors.
+          </Card.Text>
+          <div className="d-flex justify-content-center gap-3">
+            <Button as={Link} to="/upload" variant="primary" className="d-flex align-items-center">
+              <Upload className="me-2" /> Check Your Eyes
+            </Button>
+            <Button as={Link} to="/search" variant="outline-primary" className="d-flex align-items-center">
+              <Search className="me-2" /> Find a Doctor
+            </Button>
+          </div>
+        </Card.Body>
+      </Card>
+
+      {/* Features Section */}
+      <Row className="g-4 mb-5">
+        <Col md={4}>
+          <Card className="h-100 shadow-sm">
+            <Card.Body>
+              <Card.Title className="text-primary d-flex align-items-center"><Eye className="me-2" /> AI Detection</Card.Title>
+              <Card.Text>Upload an eye image for instant cataract detection with CNNs.</Card.Text>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={4}>
+          <Card className="h-100 shadow-sm">
+            <Card.Body>
+              <Card.Title className="text-primary d-flex align-items-center"><Search className="me-2" /> Doctor Search</Card.Title>
+              <Card.Text>Find qualified ophthalmologists near you easily.</Card.Text>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={4}>
+          <Card className="h-100 shadow-sm">
+            <Card.Body>
+              <Card.Title className="text-primary d-flex align-items-center"><Upload className="me-2" /> Easy Access</Card.Title>
+              <Card.Text>Access our platform anywhere, anytime.</Card.Text>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Call to Action Section */}
+      <Card className="text-center bg-light shadow-sm">
+        <Card.Body>
+          <Card.Title as="h2" className="text-primary mb-4">Take Control of Your Eye Health</Card.Title>
+          <Card.Text className="text-muted mb-4">Start today by uploading an image or finding a specialist.</Card.Text>
+          <Button as={Link} to="/upload" variant="primary">Get Started</Button>
+        </Card.Body>
+      </Card>
+    </Container>
+  );
+}
+
+export default Home;
+_________________________________________
+( History.jsx )
+import React, { useState, useEffect } from 'react';
+import { Container, Table, Spinner } from 'react-bootstrap';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import { Clock } from 'lucide-react';
+
+function History() {
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { token } = useAuth();
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/api/ai/history', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setHistory(res.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (token) fetchHistory();
+  }, [token]);
+
+  if (!token) return <Container className="my-5 text-center"><p>Please login to view your history.</p></Container>;
+  if (loading) return <Container className="my-5 text-center"><Spinner animation="border" /></Container>;
+
+  return (
+    <Container className="my-5">
+      <h2 className="text-primary mb-4 d-flex align-items-center"><Clock className="me-2" /> Diagnosis History</h2>
+      <Table striped bordered hover className="shadow-sm">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Percentage</th>
+            <th>Image</th>
+          </tr>
+        </thead>
+        <tbody>
+          {history.map((entry) => (
+            <tr key={entry.id}>
+              <td>{new Date(entry.created_at).toLocaleDateString()}</td>
+              <td>{entry.status}</td>
+              <td>{entry.percentage}%</td>
+              <td><a href={entry.image_url} target="_blank" rel="noopener noreferrer" className="text-primary">View</a></td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+    </Container>
+  );
+}
+
+export default History;
+_________________________________________
+( Login.jsx )
+import React, { useState } from 'react';
+import { Container, Form, Button, Card, Alert } from 'react-bootstrap';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { Mail, Lock } from 'lucide-react';
+
+function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+      const { access_token, role } = res.data;
+      login(access_token, { email, role });
+      setMessage('Login successful!');
+      navigate('/profile');
+    } catch (err) {
+      setMessage(err.response?.data?.msg || 'Login failed');
+    }
+  };
+
+  return (
+    <Container className="my-5 d-flex justify-content-center">
+      <Card className="w-100" style={{ maxWidth: '400px' }}>
+        <Card.Body>
+          <Card.Title as="h2" className="text-primary text-center mb-4">Login</Card.Title>
+          <Form onSubmit={handleSubmit}>
+            <Form.Group className="mb-3 d-flex align-items-center">
+              <Mail className="me-2 text-primary" />
+              <Form.Control
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3 d-flex align-items-center">
+              <Lock className="me-2 text-primary" />
+              <Form.Control
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </Form.Group>
+            <Button type="submit" variant="primary" className="w-100">Login</Button>
+          </Form>
+          {message && <Alert variant="info" className="mt-3">{message}</Alert>}
+        </Card.Body>
+      </Card>
+    </Container>
+  );
+}
+
+export default Login;
+_________________________________________
+( Navbar.jsx )
+import React from 'react';
+import { Navbar as BSNavbar, Nav, Container } from 'react-bootstrap';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { User, LogOut, Upload, Search, Home, History, Shield } from 'lucide-react';
+
+function Navbar() {
+  const { token, user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  return (
+    <BSNavbar expand="lg" className="navbar mb-4 shadow-sm">
+      <Container>
+        <BSNavbar.Brand as={Link} to="/" className="text-white d-flex align-items-center">
+          <User className="me-2" size={24} /> EyeCare
+        </BSNavbar.Brand>
+        <BSNavbar.Toggle aria-controls="basic-navbar-nav" />
+        <BSNavbar.Collapse id="basic-navbar-nav">
+          <Nav className="ms-auto">
+            <Nav.Link as={Link} to="/" className="text-white d-flex align-items-center"><Home size={20} className="me-1" /> Home</Nav.Link>
+            <Nav.Link as={Link} to="/search" className="text-white d-flex align-items-center"><Search size={20} className="me-1" /> Search</Nav.Link>
+            {token ? (
+              <>
+                <Nav.Link as={Link} to="/upload" className="text-white d-flex align-items-center"><Upload size={20} className="me-1" /> Upload</Nav.Link>
+                <Nav.Link as={Link} to="/history" className="text-white d-flex align-items-center"><History size={20} className="me-1" /> History</Nav.Link>
+                {user?.role === 'admin' && (
+                  <Nav.Link as={Link} to="/admin" className="text-white d-flex align-items-center"><Shield size={20} className="me-1" /> Admin</Nav.Link>
+                )}
+                <Nav.Link onClick={handleLogout} className="text-white d-flex align-items-center"><LogOut size={20} className="me-1" /> Logout</Nav.Link>
+              </>
+            ) : (
+              <>
+                <Nav.Link as={Link} to="/login" className="text-white">Login</Nav.Link>
+                <Nav.Link as={Link} to="/signup" className="text-white">Signup</Nav.Link>
+              </>
+            )}
+          </Nav>
+        </BSNavbar.Collapse>
+      </Container>
+    </BSNavbar>
+  );
+}
+
+export default Navbar;
+_________________________________________
+( Profile.jsx )
+import React, { useState, useEffect } from 'react';
+import { Container, Card } from 'react-bootstrap';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import { User, Mail, Shield } from 'lucide-react';
+
+function Profile() {
+  const [profile, setProfile] = useState(null);
+  const { token } = useAuth();
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/api/auth/profile', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setProfile(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    if (token) fetchProfile();
+  }, [token]);
+
+  if (!token) return <Container className="my-5 text-center"><p>Please login to view your profile.</p></Container>;
+  if (!profile) return <Container className="my-5 text-center"><p>Loading...</p></Container>;
+
+  return (
+    <Container className="my-5 d-flex justify-content-center">
+      <Card className="w-100" style={{ maxWidth: '400px' }}>
+        <Card.Header as="h5" className="text-primary text-center">Profile</Card.Header>
+        <Card.Body>
+          <Card.Title className="d-flex align-items-center"><User className="me-2 text-primary" /> {profile.first_name} {profile.last_name}</Card.Title>
+          <Card.Text className="d-flex align-items-center"><Mail className="me-2 text-primary" /> Email: {profile.email}</Card.Text>
+          <Card.Text className="d-flex align-items-center"><Shield className="me-2 text-primary" /> Role: {profile.role}</Card.Text>
+        </Card.Body>
+      </Card>
+    </Container>
+  );
+}
+
+export default Profile;
+_________________________________________
+( Search.jsx )
+import React, { useState } from 'react';
+import { Container, Form, Button, Row, Col, Card } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
+import { Search as SearchIcon } from 'lucide-react';
+
+function Search() {
+  const [state, setState] = useState('');
+  const [doctors, setDoctors] = useState([]);
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.get(`http://localhost:5000/api/doctors/search?state=${state}`);
+      setDoctors(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  return (
+    <Container className="my-5">
+      <h2 className="text-primary text-center mb-4">Search Doctors</h2>
+      <Form onSubmit={handleSearch} className="mb-4 d-flex justify-content-center">
+        <Form.Group className="d-flex align-items-center w-50">
+          <SearchIcon className="me-2 text-primary" />
+          <Form.Control
+            type="text"
+            placeholder="Enter state"
+            value={state}
+            onChange={(e) => setState(e.target.value)}
+            required
+          />
+          <Button type="submit" variant="primary" className="ms-2">Search</Button>
+        </Form.Group>
+      </Form>
+      <Row className="g-4">
+        {doctors.map((doc) => (
+          <Col md={4} key={doc.id}>
+            <Card className="h-100 shadow-sm">
+              <Card.Body>
+                <Card.Title className="text-primary">{doc.name}</Card.Title>
+                <Card.Text>
+                  <strong>Email:</strong> {doc.email || 'N/A'} <br />
+                  <strong>Qualification:</strong> {doc.qualification || 'N/A'} <br />
+                  <strong>State:</strong> {doc.state || 'N/A'} <br />
+                  <strong>Contact:</strong> {doc.contact || 'N/A'}
+                </Card.Text>
+                <Button as={Link} to={`/doctor/${doc.id}`} variant="outline-primary" className="w-100">View Profile</Button>
+              </Card.Body>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+    </Container>
+  );
+}
+
+export default Search;
+_________________________________________
+( Signup.jsx )
+import React, { useState } from 'react';
+import { Container, Form, Button, Card, Alert } from 'react-bootstrap';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { User, Mail, Lock } from 'lucide-react';
+
+function Signup() {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post('http://localhost:5000/api/auth/register', {
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        password,
+      });
+      setMessage('Signup successful, please login.');
+      navigate('/login');
+    } catch (err) {
+      setMessage(err.response?.data?.msg || 'Signup failed');
+    }
+  };
+
+  return (
+    <Container className="my-5 d-flex justify-content-center">
+      <Card className="w-100" style={{ maxWidth: '400px' }}>
+        <Card.Body>
+          <Card.Title as="h2" className="text-primary text-center mb-4">Signup</Card.Title>
+          <Form onSubmit={handleSubmit}>
+            <Form.Group className="mb-3 d-flex align-items-center">
+              <User className="me-2 text-primary" />
+              <Form.Control
+                type="text"
+                placeholder="First Name"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3 d-flex align-items-center">
+              <User className="me-2 text-primary" />
+              <Form.Control
+                type="text"
+                placeholder="Last Name"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3 d-flex align-items-center">
+              <Mail className="me-2 text-primary" />
+              <Form.Control
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3 d-flex align-items-center">
+              <Lock className="me-2 text-primary" />
+              <Form.Control
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </Form.Group>
+            <Button type="submit" variant="primary" className="w-100">Signup</Button>
+          </Form>
+          {message && <Alert variant="info" className="mt-3">{message}</Alert>}
+        </Card.Body>
+      </Card>
+    </Container>
+  );
+}
+
+export default Signup;
+_________________________________________
+( UploadForm.jsx )
+import React, { useState } from 'react';
+import { Container, Form, Button, Card, Alert, Image } from 'react-bootstrap';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import { Upload } from 'lucide-react';
+
+function UploadForm() {
+  const [image, setImage] = useState(null);
+  const [result, setResult] = useState(null);
+  const [message, setMessage] = useState('');
+  const { token } = useAuth();
+
+  const handleImageChange = (e) => {
+    setImage(e.target.files[0]);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!image) {
+      setMessage('Please select an image.');
+      return;
+    }
+    const formData = new FormData();
+    formData.append('image', image);
+
+    try {
+      const res = await axios.post('http://localhost:5000/api/ai/predict', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setResult(res.data);
+      setMessage('');
+    } catch (err) {
+      setMessage(err.response?.data?.msg || 'Prediction failed');
+    }
+  };
+
+  if (!token) return <Container className="my-5 text-center"><p>Please login to upload an image.</p></Container>;
+
+  return (
+    <Container className="my-5 d-flex justify-content-center">
+      <Card className="w-100" style={{ maxWidth: '500px' }}>
+        <Card.Body>
+          <Card.Title as="h2" className="text-primary text-center mb-4 d-flex align-items-center justify-content-center">
+            <Upload className="me-2" /> Upload Eye Image
+          </Card.Title>
+          <Form onSubmit={handleSubmit}>
+            <Form.Group className="mb-3">
+              <Form.Label>Select Image</Form.Label>
+              <Form.Control type="file" accept="image/*" onChange={handleImageChange} required />
+            </Form.Group>
+            <Button type="submit" variant="primary" className="w-100">Upload</Button>
+          </Form>
+          {message && <Alert variant="danger" className="mt-3">{message}</Alert>}
+          {result && (
+            <div className="mt-4">
+              <Alert variant="success">
+                <p><strong>Status:</strong> {result.status}</p>
+                <p><strong>Percentage:</strong> {result.percentage}%</p>
+              </Alert>
+              <Image src={result.image_url} alt="Uploaded Eye" fluid className="rounded" />
+            </div>
+          )}
+        </Card.Body>
+      </Card>
+    </Container>
+  );
+}
+
+export default UploadForm;
+_________________________________________
+( AuthContext.jsx )
+// src/context/AuthContext.jsx
+import React, { createContext, useState, useContext } from 'react';
+
+const AuthContext = createContext();
+
+export function AuthProvider({ children }) {
+  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
+
+  const login = (newToken, userData) => {
+    setToken(newToken);
+    setUser(userData);
+    localStorage.setItem('token', newToken);
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
+
+  const logout = () => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  };
+
+  return (
+    <AuthContext.Provider value={{ token, user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export const useAuth = () => useContext(AuthContext);
+_________________________________________
+( Admin.jsx )
+import React, { useState, useEffect } from 'react';
+import { Container, Form, Button, Table, Modal } from 'react-bootstrap';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import { Plus, Edit, Trash2 } from 'lucide-react';
+
+function Admin() {
+  const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [editDoctor, setEditDoctor] = useState(null);
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    password: '',
+    qualification: '',
+    state: '',
+    url_whatsapp: '',
+  });
+  const { token, user } = useAuth();
+
+  useEffect(() => {
+    fetchDoctors();
+  }, [token]);
+
+  const fetchDoctors = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/doctors/search', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setDoctors(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleAddDoctor = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post('http://localhost:5000/api/doctors/add', formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchDoctors();
+      setFormData({ first_name: '', last_name: '', email: '', password: '', qualification: '', state: '', url_whatsapp: '' });
+      setShowModal(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleEditDoctor = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.put(`http://localhost:5000/api/doctors/edit/${editDoctor.id}`, formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchDoctors();
+      setEditDoctor(null);
+      setShowModal(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteDoctor = async (id) => {
+    if (window.confirm('Are you sure you want to delete this doctor?')) {
+      try {
+        await axios.delete(`http://localhost:5000/api/doctors/delete/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        fetchDoctors();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
+  if (!token || user?.role !== 'admin') return <Container className="my-5 text-center"><p>You must be an admin to access this page.</p></Container>;
+  if (loading) return <Container className="my-5 text-center"><p>Loading...</p></Container>;
+
+  return (
+    <Container className="my-5">
+      <h2 className="text-primary mb-4">Manage Doctors</h2>
+      <Button variant="primary" onClick={() => setShowModal(true)} className="mb-3 d-flex align-items-center">
+        <Plus className="me-2" /> Add Doctor
+      </Button>
+      <Table striped bordered hover className="shadow-sm">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Qualification</th>
+            <th>State</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {doctors.map((doc) => (
+            <tr key={doc.id}>
+              <td>{doc.name}</td>
+              <td>{doc.email || 'N/A'}</td>
+              <td>{doc.qualification || 'N/A'}</td>
+              <td>{doc.state || 'N/A'}</td>
+              <td>
+                <Button
+                  variant="warning"
+                  size="sm"
+                  className="me-2 d-flex align-items-center"
+                  onClick={() => {
+                    setEditDoctor(doc);
+                    setFormData({
+                      first_name: doc.name.split(' ')[0],
+                      last_name: doc.name.split(' ')[1] || '',
+                      email: doc.email || '',
+                      password: '',
+                      qualification: doc.qualification || '',
+                      state: doc.state || '',
+                      url_whatsapp: doc.contact || '',
+                    });
+                    setShowModal(true);
+                  }}
+                >
+                  <Edit className="me-1" size={16} /> Edit
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  className="d-flex align-items-center"
+                  onClick={() => handleDeleteDoctor(doc.id)}
+                >
+                  <Trash2 className="me-1" size={16} /> Delete
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+
+      <Modal show={showModal} onHide={() => { setShowModal(false); setEditDoctor(null); }}>
+        <Modal.Header closeButton>
+          <Modal.Title className="text-primary">{editDoctor ? 'Edit Doctor' : 'Add Doctor'}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={editDoctor ? handleEditDoctor : handleAddDoctor}>
+            <Form.Group className="mb-3">
+              <Form.Label>First Name</Form.Label>
+              <Form.Control type="text" name="first_name" value={formData.first_name} onChange={handleInputChange} required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Last Name</Form.Label>
+              <Form.Control type="text" name="last_name" value={formData.last_name} onChange={handleInputChange} required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Email</Form.Label>
+              <Form.Control type="email" name="email" value={formData.email} onChange={handleInputChange} required />
+            </Form.Group>
+            {!editDoctor && (
+              <Form.Group className="mb-3">
+                <Form.Label>Password</Form.Label>
+                <Form.Control type="password" name="password" value={formData.password} onChange={handleInputChange} required />
+              </Form.Group>
+            )}
+            <Form.Group className="mb-3">
+              <Form.Label>Qualification</Form.Label>
+              <Form.Control type="text" name="qualification" value={formData.qualification} onChange={handleInputChange} />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>State</Form.Label>
+              <Form.Control type="text" name="state" value={formData.state} onChange={handleInputChange} />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>WhatsApp URL</Form.Label>
+              <Form.Control type="text" name="url_whatsapp" value={formData.url_whatsapp} onChange={handleInputChange} />
+            </Form.Group>
+            <Button type="submit" variant="primary" className="w-100">{editDoctor ? 'Update' : 'Add'}</Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
+    </Container>
+  );
+}
+
+export default Admin;
+_________________________________________
+( DoctorProfile.jsx )
+import React, { useState, useEffect } from 'react';
+import { Container, Card, Button } from 'react-bootstrap';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { Mail, MapPin, Phone } from 'lucide-react';
+
+function DoctorProfile() {
+  const [doctor, setDoctor] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchDoctor = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5000/api/doctors/search?state=`);
+        const foundDoctor = res.data.find((doc) => doc.id === parseInt(id));
+        setDoctor(foundDoctor || {});
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDoctor();
+  }, [id]);
+
+  if (loading) return <Container className="mt-5 text-center"><p>Loading...</p></Container>;
+  if (!doctor) return <Container className="mt-5 text-center"><p>Doctor not found.</p></Container>;
+
+  return (
+    <Container className="mt-5 d-flex justify-content-center">
+      <Card style={{ maxWidth: '400px' }} className="shadow">
+        <Card.Header as="h5" className="text-primary text-center">Doctor Profile</Card.Header>
+        <Card.Body>
+          <Card.Title className="text-primary">{doctor.name}</Card.Title>
+          <Card.Text className="d-flex align-items-center">
+            <Mail className="me-2 text-primary" /> <strong>Email:</strong> {doctor.email || 'N/A'}
+          </Card.Text>
+          <Card.Text className="d-flex align-items-center">
+            <MapPin className="me-2 text-primary" /> <strong>State:</strong> {doctor.state || 'N/A'}
+          </Card.Text>
+          <Card.Text className="d-flex align-items-center">
+            <Phone className="me-2 text-primary" /> <strong>Contact:</strong> {doctor.contact ? (
+              <a href={doctor.contact} target="_blank" rel="noopener noreferrer" className="text-primary">Chat</a>
+            ) : 'N/A'}
+          </Card.Text>
+          <Button variant="primary" onClick={() => navigate('/search')} className="w-100 mt-3">Back to Search</Button>
+        </Card.Body>
+      </Card>
+    </Container>
+  );
+}
+
+export default DoctorProfile;
+_________________________________________
+( package.json )
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^1.5.1",
+    "bootstrap": "^5.3.3",
+    "lucide-react": "^0.477.0",
+    "react": "^19.0.0",
+    "react-bootstrap": "^2.10.9",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^6.14.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.21.0",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.21.0",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^15.15.0",
+    "vite": "^6.2.0"
+  }
+}

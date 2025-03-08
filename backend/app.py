@@ -21,9 +21,9 @@ migrate = Migrate(app, db)
 jwt = JWTManager(app)
 
 # Register blueprints
-app.register_blueprint(auth_bp, url_prefix='/api/auth')
-app.register_blueprint(ai_bp, url_prefix='/api/ai')
-app.register_blueprint(doctors_bp, url_prefix='/api/doctors')
+app.register_blueprint(auth_bp, url_prefix='/api')
+app.register_blueprint(ai_bp, url_prefix='/api')
+app.register_blueprint(doctors_bp, url_prefix='/api')
 
 # Set up uploads folder
 UPLOAD_FOLDER = os.path.join(app.root_path, 'upload')

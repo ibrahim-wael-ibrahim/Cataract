@@ -1,1 +1,44 @@
 @import "tailwindcss";
+
+@theme {
+    --color-boston-blue-50: #ebfeff;
+    --color-boston-blue-100: #cdfaff;
+    --color-boston-blue-200: #a1f3ff;
+    --color-boston-blue-300: #60e7ff;
+    --color-boston-blue-400: #18d2f8;
+    --color-boston-blue-500: #00b5de;
+    --color-boston-blue-600: #008db7;
+    --color-boston-blue-700: #087296;
+    --color-boston-blue-800: #105c7a;
+    --color-boston-blue-900: #124d67;
+    --color-boston-blue-950: #053247;
+}
+
+
+:root {
+    /* Your default theme */
+    --background: white;
+    --foreground: black;
+}
+
+[data-theme='dark'] {
+    --background: black;
+    --foreground: white;
+}
+
+/*body {*/
+/*    @apply bg-white text-black dark:bg-[#0B0C0C] dark:text-white;*/
+/*}*/
+
+::-webkit-scrollbar {
+    @apply w-0.5  ;
+}
+
+
+::-webkit-scrollbar-thumb {
+    @apply bg-boston-blue-500;
+}
+
+.hero-container {
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 60%, rgba(0, 0, 0, 0) 99%);
+}
