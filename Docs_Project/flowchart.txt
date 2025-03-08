@@ -1,0 +1,76 @@
+┌───────────────────────────────┐
+│          Start                │
+│ Input: Raw Eye Images         │
+└───────────────────────────────┘
+           │
+           ▼
+┌───────────────────────────────┐
+│ Data Preparation & Preprocessing │
+│ - Rescale (0-1)                │
+│ - Split into train/test sets   │
+│ - Resize to (224,224) or (299,299) │
+└───────────────────────────────┘
+           │
+           ▼
+┌───────────────────────────────┐
+│ Choose Model Architecture     │
+│ [Branching Decision]           │
+│ Options:                       │
+│   CNN | VGG16 | ResNet50       │
+│   InceptionV3 | MobileNetV2    │
+│   DenseNet121 | Thresholding   │
+└───────────────────────────────┘
+           │
+           ▼
+┌───────────────────────────────┐
+│ Build Model Architecture      │
+│ (Based on Selected Model)     │
+│ Example (VGG16):               │
+│ - Base Model (pre-trained)    │
+│ - Add Layers:                  │
+│   GlobalAveragePooling2D       │
+│   Dense(128, relu)            │
+│   Dropout(0.5)                │
+│   Dense(1, sigmoid)           │
+└───────────────────────────────┘
+           │
+           ▼
+┌───────────────────────────────┐
+│ Model Compilation             │
+│ - Optimizer: Adam (lr=0.0001) │
+│ - Loss: binary_crossentropy   │
+│ - Metrics: accuracy           │
+└───────────────────────────────┘
+           │
+           ▼
+┌───────────────────────────────┐
+│ Train Model                   │
+│ - Epochs: 10                  │
+│ - Training Data: train_generator │
+│ - Validation Data: test_generator │
+└───────────────────────────────┘
+           │
+           ▼
+┌───────────────────────────────┐
+│ Evaluate Model                │
+│ - Test Accuracy: {test_accuracy}% │
+└───────────────────────────────┘
+           │
+           ▼
+┌───────────────────────────────┐
+│ Visualize Results             │
+│ - Plot Accuracy/Loss Curves   │
+└───────────────────────────────┘
+           │
+           ▼
+┌───────────────────────────────┐
+│ Optional: Image Thresholding  │
+│ (Preprocessing Experiment)    │
+│ - Global Thresholding         │
+│ - Adaptive Thresholding       │
+└───────────────────────────────┘
+           │
+           ▼
+┌───────────────────────────────┐
+│           End                 │
+└───────────────────────────────┘
