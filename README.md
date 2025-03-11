@@ -6,7 +6,6 @@
 [![Next.js](https://img.shields.io/badge/Next.js-14.0.3-blue)](https://nextjs.org/)
 [![TensorFlow](https://img.shields.io/badge/TensorFlow-2.15.0-orange)](https://www.tensorflow.org/)
 
-![System Architecture](./docs/architecture.png) <!-- Replace with actual path -->
 
 A full-stack medical imaging platform for early cataract detection using deep learning.
 
