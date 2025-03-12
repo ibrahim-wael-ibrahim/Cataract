@@ -6,7 +6,6 @@ import { useAuth } from "@/lib/context/auth";
 import api from "@/lib/utils/api";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import Spinner from "@/components/ui/Spinner";
 import { Upload } from "lucide-react";
 import HistoryCard from "@/components/HistoryCard";
 
@@ -16,13 +15,13 @@ export default function Scan() {
     const [result, setResult] = useState(null); // Backend response
     const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(false);
+    const [scanning, setScanning] = useState(false); // State for scanning effect
     const { user } = useAuth();
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
             setImage(file);
-            // Create a local URL for preview
             const url = URL.createObjectURL(file);
             setPreviewUrl(url);
         }
@@ -35,25 +34,31 @@ export default function Scan() {
             return;
         }
 
-        const formData = new FormData();
-        formData.append("image", image);
-
-        setLoading(true);
+        setScanning(true); // Start scanning effect
         setMessage("");
-        try {
-            const res = await api.post("/predict", formData, { // Fixed to /ai/predict
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                    Authorization: `Bearer ${user.token}`,
-                },
-            });
-            setResult(res.data);
-            setPreviewUrl(null); // Update preview with backend URL
-        } catch (err) {
-            setMessage(err.response?.data?.error || "Prediction failed");
-        } finally {
-            setLoading(false);
-        }
+        setTimeout(async () => {
+            const formData = new FormData();
+            formData.append("image", image);
+
+            setLoading(true);
+            try {
+                const res = await api.post("/predict", formData, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        Authorization: `Bearer ${user.token}`,
+                    },
+                });
+                setResult(res.data);
+                setPreviewUrl(null);
+            } catch (err) {
+                setMessage(
+                    err.response?.data?.error || "Prediction failed. Please try again."
+                );
+            } finally {
+                setLoading(false);
+                setScanning(false); // Stop scanning effect
+            }
+        }, 5000); // 5-second delay for scanning effect
     };
 
     if (!user) {
@@ -62,60 +67,129 @@ export default function Scan() {
                 <p className="text-center">Please log in to upload an image.</p>
             </section>
         );
-    }console.log(result)
+    }
 
     return (
-        <section className="min-h-dvh w-full p-8 flex justify-center items-center ">
-            <div className="p-6 bg-boston-blue-500/10 backdrop-blur-2xl  rounded-2xl shadow-md  transition-all  w-[400px] min-h-[500px] flex flex-col justify-start items-center gap-8">
-                <Button className="flex justify-center items-center gap-4 w-full">
-
-                <label htmlFor="image" className="text-2xl font-bold w-full text-boston-blue-700 mb-4 flex items-center justify-center">
-
-                    <Upload /> <span>Scan Your Eye</span>
-                </label>
-                </Button>
-
-                {
-                    previewUrl && (
-                        <div className="h-40 w-full  rounded-3xl overflow-hidden relative">
-                            <img
-                                src={previewUrl}
-                                alt={`Diagnosis`}
-                                className="bg-cover object-center w-full "
-                            />
-
-                        </div>
-                    )
-                }
-                <form onSubmit={handleSubmit} className="space-y-4 w-full">
-                    <div>
-                        {/*<label className="block text-sm font-bold mb-2">Select Image</label>*/}
-                        <Input
-                            idInput="image"
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageChange}
-                            required
-                            containerClassName="hidden"
-                        />
-
+        <section className="min-h-dvh w-full p-8 flex justify-center items-center">
+            <div className="p-6 bg-boston-blue-500/10 backdrop-blur-2xl rounded-2xl shadow-md transition-all w-4/6 min-h-[500px] flex flex-col justify-start items-center gap-8">
+                <div className="min-h-[250px] w-full flex flex-col md:flex-row justify-start items-center gap-8 border-2 p-4 rounded-3xl">
+                    <img
+                        src="/images/EYES_EX.jpeg"
+                        alt="Example image showing a close-up of an eye with good lighting and focus for cataract detection"
+                        className="rounded-3xl object-cover object-center w-full md:w-1/2"
+                    />
+                    <div className="w-full md:w-1/2">
+                        <h1 className="text-2xl font-bold mb-4">
+                            Guidelines for Uploading Eye Images
+                        </h1>
+                        <p className="mb-4">
+                            To ensure accurate cataract detection, please follow these rules
+                            when uploading an image:
+                        </p>
+                        <ul className="list-disc pl-5 space-y-2">
+                            <li>
+                                <strong>Eye Visibility</strong>: The eye should be fully open
+                                and not obscured by hair, glasses, or other objects.
+                            </li>
+                            <li>
+                                <strong>Lighting</strong>: Use natural light or a well-lit room
+                                to avoid shadows on the eye.
+                            </li>
+                            <li>
+                                <strong>Focus</strong>: Hold the camera steady to ensure the
+                                image is not blurry.
+                            </li>
+                            <li>
+                                <strong>Close-up</strong>: Position the camera close to the eye,
+                                filling most of the frame with the eye.
+                            </li>
+                            <li>
+                                <strong>Orientation</strong>: Have the person look directly at
+                                the camera.
+                            </li>
+                            <li>
+                                <strong>Image Quality</strong>: Use the highest resolution
+                                possible for better analysis.
+                            </li>
+                            <li>
+                                <strong>File Type</strong>: Upload images in JPEG or PNG format.
+                            </li>
+                        </ul>
                     </div>
+                </div>
+
+                <form onSubmit={handleSubmit} className=" w-full flex  justify-between items-center gap-4">
+                    <label
+                        htmlFor="image"
+                        className="px-4 py-4 min-h-4 rounded-2xl uppercase text-md disabled:bg-boston-blue-950 border-2 border-boston-blue-700 hover:bg-boston-blue-400 transition-[background] duration-500 ease-in-out cursor-pointer text-2xl font-bold w-full text-boston-blue-700  flex items-center justify-center "
+                    >
+                        <Upload className="mx-4" /> <span>Scan Your Eye</span>
+                    </label>
+                    <Input
+                        idInput="image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        required
+                        containerClassName="hidden"
+                    />
                     <Button
                         type="submit"
-                        disabled={loading}
-                        className="w-full bg-boston-blue-700"
+                        disabled={loading || scanning}
+                        className="w-full bg-boston-blue-700 py-5 "
                     >
-                        upload
+                        {scanning ? "Scanning..." : "Upload"}
                     </Button>
                 </form>
 
-                {message && (
-                    <p className="text-red-400 mt-3 text-center">{message}</p>
+
+                {previewUrl && (
+                    <div className="w-3/6 aspect-square rounded-3xl overflow-hidden relative">
+                        <img
+                            src={previewUrl}
+                            alt="Selected eye image for diagnosis"
+                            className={`object-cover object-center w-full h-full ${
+                                scanning ? "opacity-45" : ""
+                            }`}
+                        />
+                        {scanning && (
+                            <div className="absolute inset-0 flex flex-col justify-center items-center">
+                                <svg
+                                    className="animate-spin h-12 w-12 text-boston-blue-700"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <circle
+                                        className="opacity-25"
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                        stroke="currentColor"
+                                        strokeWidth="4"
+                                    />
+                                    <path
+                                        className="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8v8h8a8 8 0 11-16 0z"
+                                    />
+                                </svg>
+                                <p className="mt-4 text-lg font-semibold text-boston-blue-700">
+                                    Scanning...
+                                </p>
+                            </div>
+                        )}
+                    </div>
                 )}
 
-                {result && (
-                    <HistoryCard status={result.status} image_url={result.image_url}  percentage={result.percentage} />
+                {message && <p className="text-red-400 mt-3 text-center">{message}</p>}
 
+                {result && (
+                    <HistoryCard
+                        status={result.status}
+                        image_url={result.image_url}
+                        percentage={result.percentage}
+                    />
                 )}
             </div>
         </section>

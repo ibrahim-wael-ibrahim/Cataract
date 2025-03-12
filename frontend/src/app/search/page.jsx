@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from "react";
 import useDoctors from "@/lib/hooks/useDoctors";
-import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { Search as SearchIcon } from "lucide-react";
 import Spinner from "@/components/ui/Spinner";
